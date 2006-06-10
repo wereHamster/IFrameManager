@@ -1,0 +1,10 @@
+## Interface: 11000
+## Title: IFrameManager
+## Author: Shag
+
+# -- IFrameFactory
+IFrameFactory\IFrameFactory.lua
+
+IFrameManager.xml
+IFrameManager.lua
+IFrameManagerCapsule.lua
