@@ -3,6 +3,7 @@
 ## Author: Shag
 
 # -- IFrameFactory
+## OptionalDeps: IFrameFactory
 IFrameFactory\IFrameFactory.lua
 
 IFrameManager.xml
