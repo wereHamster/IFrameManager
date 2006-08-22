@@ -10,8 +10,7 @@
                 </Offset>
             </Anchor>
         </Anchors>
-        <NormalTexture file="Interface\AddOns\IFrameManager\MinimapButton"/>
-        <HighlightTexture alphaMode="ADD" file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight"/>
+        <NormalTexture file="Interface\AddOns\IFrameManager\Textures\MinimapButton-Normal"/>
         <Scripts>
             <OnLoad>
                 this:SetScale(0.8)

@@ -4,7 +4,7 @@
 
 # -- IFrameFactory
 ## OptionalDeps: IFrameFactory
-IFrameFactory\IFrameFactory.lua
+Libs\IFrameFactory\IFrameFactory.lua
 
 IFrameManager.xml
 IFrameManager.lua
