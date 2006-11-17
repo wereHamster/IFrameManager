@@ -117,7 +117,7 @@ function IFrameManagerCapsule:OnUpdate()
 	this:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xCur + this.xOffset, yCur + this.yOffset)
 	
 	local xDiff, yDiff = 10, 10
-	for frame, iface in IFrameManager.frameList do
+	for frame, iface in pairs(IFrameManager.frameList) do
 		if (frame.IFrameManager ~= this) then
 			if (framesOverlap(this, frame.IFrameManager)) then
 				xDiff, yDiff = snapFrames(this, frame.IFrameManager, xDiff, yDiff)

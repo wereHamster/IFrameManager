@@ -36,7 +36,7 @@ function IFrameManager:Enable()
 		return
 	end
 	
-	for frame, iface in self.frameList do
+	for frame, iface in pairs(self.frameList) do
 		frame.IFrameManager = IFrameFactory:Create("IFrameManager", "Capsule")
 		frame.IFrameManager.label:SetText(iface:getName(frame))
 	end
@@ -52,7 +52,7 @@ function IFrameManager:Refresh()
 		return
 	end
 	
-	for frame, iface in self.frameList do
+	for frame, iface in pairs(self.frameList) do
 		local capsule = frame.IFrameManager
 		local t, r, b, l = iface:getBorder(frame)
 		
@@ -83,7 +83,7 @@ function IFrameManager:Disable()
 		return
 	end
 	
-	for frame, iface in self.frameList do
+	for frame, iface in pairs(self.frameList) do
 		local capsule = frame.IFrameManager
 		frame.IFrameManager = nil
 		
