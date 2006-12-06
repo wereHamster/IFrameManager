@@ -1,4 +1,4 @@
-## Interface: 11200
+## Interface: 20000
 ## Title: IFrameManager
 ## Author: wereHamster
 
