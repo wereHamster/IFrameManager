@@ -158,8 +158,8 @@ local backdropTable = {
 	}
 }
 
-function IFrameManagerCapsuleFactory:Create(name)
-	local frame = CreateFrame("Frame", name, UIParent)
+function IFrameManagerCapsuleFactory:Create()
+	local frame = CreateFrame("Frame", nil, UIParent)
 	frame:SetWidth(32)
 	frame:SetHeight(32)
 	
@@ -174,7 +174,7 @@ function IFrameManagerCapsuleFactory:Create(name)
 	frame:SetBackdropBorderColor(0, 0, 0, 1)
 	frame:SetBackdropColor(0, 0, 0, 1)
 	
-	frame.label = frame:CreateFontString(name.."Label", "Capsule")
+	frame.label = frame:CreateFontString(nil, "Capsule")
 	frame.label:Show()
 	frame.label:SetFontObject(GameFontNormal)
 	frame.label:SetText("IFrameManagerCapsule")
