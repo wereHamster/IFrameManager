@@ -1,5 +1,6 @@
 
-local IFrameFactory = IFrameFactory("1.0")
+local FactoryInterface = { }
+IFrameFactory("1.0"):Register("IFrameManager", "Overlay", FactoryInterface)
 
 local function framesOverlap(frameA, frameB)
 	local sA, sB = frameA:GetEffectiveScale(), frameB:GetEffectiveScale()
@@ -80,16 +81,12 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 end
 
 
---[[
-	IFrameManagerCapsule
-]]
-local IFrameManagerCapsule = { }
 
-function IFrameManagerCapsule:OnShow()
+local function OnShow()
 	--DEFAULT_CHAT_FRAME:AddMessage("IFrameManagerCapsule:OnShow()")
 end
 
-function IFrameManagerCapsule:OnMouseDown()
+local function OnMouseDown()
 	--DEFAULT_CHAT_FRAME:AddMessage("IFrameManagerCapsule:OnMouseDown()")
 	--this:StartMoving()
 	this.startMoving = true
@@ -102,7 +99,7 @@ function IFrameManagerCapsule:OnMouseDown()
 	this.xOffset, this.yOffset = (xCenter - xCur), (yCenter - yCur)
 end
 
-function IFrameManagerCapsule:OnUpdate()
+local function OnUpdate()
 	if (this.startMoving == nil) then
 		return
 	end
@@ -128,21 +125,16 @@ function IFrameManagerCapsule:OnUpdate()
 	snapFrames(this, UIParent, xDiff, yDiff)
 end
 
-function IFrameManagerCapsule:OnMouseUp()
+local function OnMouseUp()
 	--DEFAULT_CHAT_FRAME:AddMessage("IFrameManagerCapsule:OnMouseUp()")
 	--this:StopMovingOrSizing()
 	this.startMoving = nil
 end
 
-function IFrameManagerCapsule:OnHide()
+local function OnHide()
 	--DEFAULT_CHAT_FRAME:AddMessage("IFrameManagerCapsule:OnHide()")
 end
 
---[[
-	IFrameManagerCapsule Factory
-]]
-local IFrameManagerCapsuleFactory = { }
-IFrameFactory:Register("IFrameManager", "Capsule", IFrameManagerCapsuleFactory)
 
 local backdropTable = {
 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
@@ -158,7 +150,7 @@ local backdropTable = {
 	}
 }
 
-function IFrameManagerCapsuleFactory:Create()
+function FactoryInterface:Create()
 	local frame = CreateFrame("Frame", nil, UIParent)
 	frame:SetWidth(32)
 	frame:SetHeight(32)
@@ -174,25 +166,25 @@ function IFrameManagerCapsuleFactory:Create()
 	frame:SetBackdropBorderColor(0, 0, 0, 1)
 	frame:SetBackdropColor(0, 0, 0, 1)
 	
-	frame.label = frame:CreateFontString(nil, "Capsule")
+	frame.label = frame:CreateFontString(nil, "Label")
 	frame.label:Show()
 	frame.label:SetFontObject(GameFontNormal)
-	frame.label:SetText("IFrameManagerCapsule")
-	frame.label:ClearAllPoints()
+	frame.label:SetText("IFrameManager")
 	frame.label:SetPoint("CENTER", frame, "CENTER", 0, 0)
 	frame.label:SetJustifyH("CENTER")
 	frame.label:SetTextColor(1.0, 0.82, 0)
 	
 	
-	frame:SetScript("OnShow", function() IFrameManagerCapsule:OnShow() end)
-	frame:SetScript("OnMouseDown", function() IFrameManagerCapsule:OnMouseDown() end)
-	frame:SetScript("OnUpdate", function() IFrameManagerCapsule:OnUpdate() end)
-	frame:SetScript("OnMouseUp", function() IFrameManagerCapsule:OnMouseUp() end)
-	frame:SetScript("OnHide", function() IFrameManagerCapsule:OnHide() end)
+	frame:SetScript("OnShow", OnShow)
+	frame:SetScript("OnMouseDown", OnMouseDown)
+	frame:SetScript("OnUpdate", OnUpdate)
+	frame:SetScript("OnMouseUp", OnMouseUp)
+	frame:SetScript("OnHide", OnHide)
 	
 	return frame
 end
 
-function IFrameManagerCapsuleFactory:Destroy(frame)
+function FactoryInterface:Destroy(frame)
 	return frame
 end
+

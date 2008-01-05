@@ -37,7 +37,7 @@ function IFrameManager:Enable()
 	end
 	
 	for frame, iface in pairs(self.frameList) do
-		frame.IFrameManager = IFrameFactory:Create("IFrameManager", "Capsule")
+		frame.IFrameManager = IFrameFactory:Create("IFrameManager", "Overlay")
 		frame.IFrameManager.label:SetText(iface:getName(frame))
 	end
 	
@@ -93,7 +93,7 @@ function IFrameManager:Disable()
 		frame:SetUserPlaced(true)
 		capsule:SetUserPlaced(false)
 		
-		IFrameFactory:Destroy("IFrameManager", "Capsule", capsule)
+		IFrameFactory:Destroy("IFrameManager", "Overlay", capsule)
 		frame.IFrameManager = nil
 	end
 	
@@ -119,3 +119,4 @@ SlashCmdList["IFrameManager"] = function(msg)
 		IFrameManager:Disable()
 	end
 end
+
