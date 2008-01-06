@@ -91,7 +91,6 @@ function IFrameManager:Enable()
 		end
 	end
 	
-	IFrameManagerButton:SetNormalTexture("Interface\\AddOns\\IFrameManager\\Textures\\MinimapButton-Highlight")
 	self.isEnabled = true
 end
 
@@ -109,7 +108,6 @@ function IFrameManager:Disable()
 		frame.IFrameManager = nil
 	end
 	
-	IFrameManagerButton:SetNormalTexture("Interface\\AddOns\\IFrameManager\\Textures\\MinimapButton-Normal")
 	self.isEnabled = nil
 end
 

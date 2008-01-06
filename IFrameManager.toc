@@ -10,6 +10,5 @@ Libs\IFrameFactory\IFrameFactory.lua
 Frames\Anchor.lua
 Frames\Overlay.lua
 
-IFrameManager.xml
 IFrameManager.lua
 

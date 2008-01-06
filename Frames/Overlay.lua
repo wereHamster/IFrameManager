@@ -117,7 +117,7 @@ local function OnUpdate()
 	end
 	
 	local xCur, yCur = GetCursorPosition()
-	local s = 1 --this.Parent:GetEffectiveScale()
+	local s = this.Parent:GetEffectiveScale()
 
 	this.Parent:ClearAllPoints()
 	this.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xCur / s + this.Offset[1], yCur / s + this.Offset[2])
