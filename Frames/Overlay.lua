@@ -16,6 +16,7 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 	local lC, tC, rC, bC = frameCandidate:GetLeft(), frameCandidate:GetTop(), frameCandidate:GetRight(), frameCandidate:GetBottom()
 	
 	local xT, yT = frameThis:GetCenter()
+	local xO, yO = frameThis.Parent:GetCenter()
 	local xC, yC = frameCandidate:GetCenter()
 	local hT, hC = frameThis:GetHeight() / 2, ((frameCandidate:GetHeight() * sC) / sT) / 2
 	local wT, wC = frameThis:GetWidth() / 2, ((frameCandidate:GetWidth() * sC) / sT) / 2
@@ -24,6 +25,8 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 	
 	local xSet, ySet = lastXDiff, lastYDiff
 	local xDiff, yDiff = 0, 0
+
+	xO, yO = xO - xT, yO - yT
 	
 	xDiff = math.abs(rT - lC)
 	if (xDiff < xSet) then
@@ -73,9 +76,9 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 		yT = tC + hT --- 3
 		ySet = yDiff
 	end
-	
+
 	frameThis.Parent:ClearAllPoints()
-	frameThis.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xT, yT)
+	frameThis.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xT + xO, yT + yO)
 	this.Parent:GetCenter()
 	
 	return math.min(xSet, lastXDiff), math.min(ySet, lastYDiff)
@@ -114,7 +117,7 @@ local function OnUpdate()
 	end
 	
 	local xCur, yCur = GetCursorPosition()
-	local s = this.Parent:GetEffectiveScale()
+	local s = 1 --this.Parent:GetEffectiveScale()
 
 	this.Parent:ClearAllPoints()
 	this.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xCur / s + this.Offset[1], yCur / s + this.Offset[2])
@@ -123,7 +126,7 @@ local function OnUpdate()
 	this.Parent:GetCenter()
 	
 	local xDiff, yDiff = 10, 10
-	for frame, iface in pairs(IFrameManager.frameList) do
+	for frame, iface in pairs(IFrameManager.List) do
 		local data = IFrameManagerLayout[frame:GetName()]
 		if (frame.IFrameManager ~= this and not (data and data[2] == this.Parent:GetName())) then
 			if (framesOverlap(this, frame.IFrameManager)) then

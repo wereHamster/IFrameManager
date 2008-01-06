@@ -37,18 +37,18 @@ local function OnEnter(self)
 end
 
 local function OnMouseDown(self)
-	if (IFrameManager.Link.Source == nil) then
+	if (IFrameManager.Source == nil) then
 		if (self:GetParent().Parent:GetName() == nil) then
 			DEFAULT_CHAT_FRAME:AddMessage("invalid source")
 			self:SetBackdropColor(0.4, 0.4, 0.4, 1)
 			return
 		end
 
-		IFrameManager.Link.Source = self
+		IFrameManager.Source = self
 		return
 	end
 
-	local src = IFrameManager.Link.Source:GetParent()
+	local src = IFrameManager.Source:GetParent()
 	if (src == self:GetParent()) then
 		DEFAULT_CHAT_FRAME:AddMessage("resetting layout")
 		IFrameManagerLayout[src.Parent:GetName()] = nil
@@ -62,19 +62,21 @@ local function OnMouseDown(self)
 		return
 	end
 
-	local sA, dA = src.Anchors[IFrameManager.Link.Source], dst.Anchors[self]
-	local sX, sY = anchorPoints[sA](src)
-	local dX, dY = anchorPoints[dA](dst)
+	local sA, dA = src.Anchors[IFrameManager.Source], dst.Anchors[self]
+	local sX, sY = anchorPoints[sA](src.Parent)
+	local dX, dY = anchorPoints[dA](dst.Parent)
 	IFrameManagerLayout[src.Parent:GetName()] = {
 		sA, dst.Parent:GetName(), dA, sX - dX, sY - dY
 	}
 
-	IFrameManager.Link.Source:SetBackdropColor(0.4, 0.4, 0.4, 1)
+	IFrameManager.Source:SetBackdropColor(0.4, 0.4, 0.4, 1)
 	self:SetBackdropColor(0.4, 0.4, 0.4, 1)
+
+	IFrameManager.Source = nil
 end
 
 local function OnLeave(self)
-	if (IFrameManager.Link and IFrameManager.Link.Source ~= self) then
+	if (IFrameManager.Source ~= self) then
 		self:SetBackdropColor(0.4, 0.4, 0.4, 1)
 	end
 end

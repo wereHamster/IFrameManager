@@ -43,7 +43,7 @@ function IFrameManager:Enable()
 		frame.IFrameManager:SetParent(UIParent)
 		frame.IFrameManager:SetScale(frame:GetScale())
 
-		frame.IFrameManager.label:SetWidth(frame.IFrameManager:GetWidth() - 20)
+		frame.IFrameManager.label:SetWidth(frame.IFrameManager:GetWidth())
 		frame.IFrameManager.label:SetText(iface:getName(frame))
 
 		frame.IFrameManager:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", -l, -b)
@@ -52,11 +52,11 @@ function IFrameManager:Enable()
 		local anchors = { { }, { } }
 
 		local height = frame.IFrameManager:GetHeight()
-		if (height > 3 * 18) then
+		if (height >= 3 * 18) then
 			table.insert(anchors[1], { "TOP", 16 })
 			table.insert(anchors[1], { "", height - 2 * 18 })
 			table.insert(anchors[1], { "BOTTOM", 16 })
-		elseif (height > 2 * 16) then
+		elseif (height >= 2 * 16) then
 			table.insert(anchors[1], { "TOP", 16 })
 			table.insert(anchors[1], { "BOTTOM", 16 })
 		else
@@ -64,11 +64,11 @@ function IFrameManager:Enable()
 		end
 
 		local width = frame.IFrameManager:GetWidth()
-		if (width > 3 * 18) then
+		if (width >= 3 * 18) then
 			table.insert(anchors[2], { "LEFT", 16 })
 			table.insert(anchors[2], { "", width - 2 * 18 })
 			table.insert(anchors[2], { "RIGHT", 16 })
-		elseif (width > 2 * 18) then
+		elseif (width >= 2 * 18) then
 			table.insert(anchors[2], { "LEFT", 16 })
 			table.insert(anchors[2], { "RIGHT", 16 })
 		else
@@ -139,7 +139,6 @@ eventFrame:RegisterEvent("MODIFIER_STATE_CHANGED")
 eventFrame:SetScript("OnEvent", function(self, event, key, value)
 	if (key == "LCTRL") then
 		if (value == 1) then
-			IFrameManager.Link = { }
 			for frame, iface in pairs(IFrameManager.List) do
 				if (frame.IFrameManager) then
 					frame.IFrameManager.label:Hide()
@@ -149,11 +148,10 @@ eventFrame:SetScript("OnEvent", function(self, event, key, value)
 				end
 			end
 		else
-			if (IFrameManager.Link and IFrameManager.Link.Source) then
-				IFrameManager.Link.Source:SetBackdropColor(1.0, 0.82, 0)
+			if (IFrameManager.Source) then
+				IFrameManager.Source:SetBackdropColor(1.0, 0.82, 0)
 			end
 
-			IFrameManager.Link = nil
 			for frame, iface in pairs(IFrameManager.List) do
 				if (frame.IFrameManager) then
 					frame.IFrameManager.label:Show()
