@@ -27,7 +27,7 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 	
 	xDiff = math.abs(rT - lC)
 	if (xDiff < xSet) then
-		xT = lC - wT + 3
+		xT = lC - wT --+ 3
 		xSet = xDiff
 	end
 	
@@ -45,14 +45,14 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 	
 	xDiff = math.abs(lT - rC)
 	if (xDiff < xSet) then
-		xT = rC + wT - 3
+		xT = rC + wT --- 3
 		xSet = xDiff
 	end
 	
 	
 	yDiff = math.abs(tT - bC)
 	if (yDiff < ySet) then
-		yT = bC - hT + 3
+		yT = bC - hT --+ 3
 		ySet = yDiff
 	end
 	
@@ -70,52 +70,62 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 	
 	yDiff = math.abs(bT - tC)
 	if (yDiff < ySet) then
-		yT = tC + hT - 3
+		yT = tC + hT --- 3
 		ySet = yDiff
 	end
 	
-	frameThis:ClearAllPoints()
-	frameThis:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xT, yT)
+	frameThis.Parent:ClearAllPoints()
+	frameThis.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xT, yT)
+	this.Parent:GetCenter()
 	
 	return math.min(xSet, lastXDiff), math.min(ySet, lastYDiff)
 end
 
+local function OnMouseDown()
+	if (this.Parent:GetName() == nil) then
+		return
+	end
 
+	IFrameManagerLayout[this.Parent:GetName()] = nil
 
-local function OnShow()
-	--DEFAULT_CHAT_FRAME:AddMessage("IFrameManagerCapsule:OnShow()")
+	local xCur, yCur = GetCursorPosition()
+	local xCenter, yCenter = this.Parent:GetCenter()
+	local s = this.Parent:GetEffectiveScale()
+
+	this.Offset = { xCenter - xCur / s, yCenter - yCur / s }
 end
 
-local function OnMouseDown()
-	--DEFAULT_CHAT_FRAME:AddMessage("IFrameManagerCapsule:OnMouseDown()")
-	--this:StartMoving()
-	this.startMoving = true
-	
-	local xCur, yCur = GetCursorPosition()
-	local xCenter, yCenter = this:GetCenter()
-	local s = this:GetEffectiveScale()
-	
-	xCur, yCur = xCur / s, yCur / s
-	this.xOffset, this.yOffset = (xCenter - xCur), (yCenter - yCur)
+local function updatePosition(frame)
+	frame:ClearAllPoints()
+
+	local data = IFrameManagerLayout[frame:GetName()]
+	frame:SetPoint(unpack(data))
+
+	for src, data in pairs(IFrameManagerLayout) do
+		if (data[2] == frame:GetName()) then
+			updatePosition(getglobal(src))
+		end
+	end
 end
 
 local function OnUpdate()
-	if (this.startMoving == nil) then
+	if (this.Offset == nil) then
 		return
 	end
-	--DEFAULT_CHAT_FRAME:AddMessage("IFrameManagerCapsule:OnUpdate()")
 	
 	local xCur, yCur = GetCursorPosition()
-	local s = this:GetEffectiveScale()
-		
-	xCur, yCur = xCur / s, yCur / s
+	local s = this.Parent:GetEffectiveScale()
 
-	this:ClearAllPoints()
-	this:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xCur + this.xOffset, yCur + this.yOffset)
+	this.Parent:ClearAllPoints()
+	this.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xCur / s + this.Offset[1], yCur / s + this.Offset[2])
+
+	-- The overlay won't move unless I do this. OnUpdate bug?
+	this.Parent:GetCenter()
 	
 	local xDiff, yDiff = 10, 10
 	for frame, iface in pairs(IFrameManager.frameList) do
-		if (frame.IFrameManager ~= this) then
+		local data = IFrameManagerLayout[frame:GetName()]
+		if (frame.IFrameManager ~= this and not (data and data[2] == this.Parent:GetName())) then
 			if (framesOverlap(this, frame.IFrameManager)) then
 				xDiff, yDiff = snapFrames(this, frame.IFrameManager, xDiff, yDiff)
 			end
@@ -123,30 +133,36 @@ local function OnUpdate()
 	end
 	
 	snapFrames(this, UIParent, xDiff, yDiff)
+
+	-- Update all dependent frames
+	for src, data in pairs(IFrameManagerLayout) do
+		if (data[2] == this.Parent:GetName()) then
+			updatePosition(getglobal(src))
+		end
+	end
 end
 
 local function OnMouseUp()
-	--DEFAULT_CHAT_FRAME:AddMessage("IFrameManagerCapsule:OnMouseUp()")
-	--this:StopMovingOrSizing()
-	this.startMoving = nil
-end
-
-local function OnHide()
-	--DEFAULT_CHAT_FRAME:AddMessage("IFrameManagerCapsule:OnHide()")
+	if (this.Offset) then
+		this.Offset = nil
+		IFrameManagerLayout[this.Parent:GetName()] = {
+			"BOTTOMLEFT", "UIParent", "BOTTOMLEFT", this.Parent:GetLeft(), this.Parent:GetBottom()
+		}
+	end
 end
 
 
 local backdropTable = {
 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-	edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+	edgeFile = "Interface\\AddOns\\IFrameManager\\Textures\\Border2.tga",
 	tile = true,
 	tileSize = 12,
 	edgeSize = 12,
 	insets = {
-		left = 2,
-		right = 2,
-		top = 2,
-		bottom = 2
+		left = 1,
+		right = 1,
+		top = 1,
+		bottom = 1,
 	}
 }
 
@@ -163,7 +179,7 @@ function FactoryInterface:Create()
 	frame:SetFrameStrata("HIGH")
 
 	frame:SetBackdrop(backdropTable)
-	frame:SetBackdropBorderColor(0, 0, 0, 1)
+	frame:SetBackdropBorderColor(0.8, 0.8, 0.8, 1)
 	frame:SetBackdropColor(0, 0, 0, 1)
 	
 	frame.label = frame:CreateFontString(nil, "Label")
@@ -173,13 +189,10 @@ function FactoryInterface:Create()
 	frame.label:SetPoint("CENTER", frame, "CENTER", 0, 0)
 	frame.label:SetJustifyH("CENTER")
 	frame.label:SetTextColor(1.0, 0.82, 0)
-	
-	
-	frame:SetScript("OnShow", OnShow)
+
 	frame:SetScript("OnMouseDown", OnMouseDown)
 	frame:SetScript("OnUpdate", OnUpdate)
 	frame:SetScript("OnMouseUp", OnMouseUp)
-	frame:SetScript("OnHide", OnHide)
 	
 	return frame
 end

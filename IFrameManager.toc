@@ -1,13 +1,15 @@
 ## Interface: 20200
 ## Title: IFrameManager
 ## Author: wereHamster
+## SavedVariables: IFrameManagerLayout
 
 # -- IFrameFactory
 ## OptionalDeps: IFrameFactory
 Libs\IFrameFactory\IFrameFactory.lua
 
+Frames\Anchor.lua
 Frames\Overlay.lua
 
 IFrameManager.xml
 IFrameManager.lua
-IFrameManagerCapsule.lua
+
