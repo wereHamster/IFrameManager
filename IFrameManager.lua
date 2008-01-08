@@ -39,6 +39,8 @@ function IFrameManager:Register(frame, iface)
 	IFrameManagerLayout[frame:GetName()] = IFrameManagerLayout[frame:GetName()] or { "CENTER", "UIParent", "CENTER" }
 end
 
+IFrameManager:Register(UIParent, IFrameManager:Interface())
+
 
 --[[
 		IFrameManager:Enable()
@@ -48,95 +50,76 @@ end
 	the underlying frame is also moved. Frames can be anchored together
 	by clicking on the anchor boxes.
 ]]
+
+local function CreateOverlay(frame, iface)
+	local overlay = IFrameFactory:Create("IFrameManager", "Overlay")
+	overlay = IFrameFactory:Create("IFrameManager", "Overlay")
+	overlay.Parent = frame
+
+	local t, r, b, l = iface:getBorder(frame)
+	overlay:SetWidth(frame:GetWidth() + l + r)
+	overlay:SetHeight(frame:GetHeight() + t + b)
+	overlay:SetScale(frame:GetScale())
+	overlay:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", -l, -b)
+
+	overlay.label:SetWidth(overlay:GetWidth())
+	overlay.label:SetText(iface:getName(frame))
+
+	-- Set up the anchors
+	local anchors = { { }, { } }
+
+	local height = overlay:GetHeight()
+	if (height >= 3 * 18) then
+		table.insert(anchors[1], { "TOP", 16 })
+		table.insert(anchors[1], { "", height - 2 * 18 })
+		table.insert(anchors[1], { "BOTTOM", 16 })
+	elseif (height >= 2 * 16) then
+		table.insert(anchors[1], { "TOP", 16 })
+		table.insert(anchors[1], { "BOTTOM", 16 })
+	else
+		table.insert(anchors[1], { "", height })
+	end
+
+	local width = overlay:GetWidth()
+	if (width >= 3 * 18) then
+		table.insert(anchors[2], { "LEFT", 16 })
+		table.insert(anchors[2], { "", width - 2 * 18 })
+		table.insert(anchors[2], { "RIGHT", 16 })
+	elseif (width >= 2 * 18) then
+		table.insert(anchors[2], { "LEFT", 16 })
+		table.insert(anchors[2], { "RIGHT", 16 })
+	else
+		table.insert(anchors[2], { "", width })
+	end
+
+	overlay.Anchors = { }
+	for _, v in pairs(anchors[1]) do
+		for _, h in pairs(anchors[2]) do
+			local point = v[1] == "" and h[1] == "" and "CENTER" or v[1]..h[1]
+			local anchor = IFrameFactory:Create("IFrameManager", "Anchor")
+			overlay.Anchors[anchor] = point
+
+			anchor:SetWidth(math.min(h[2], 40))
+			anchor:SetHeight(math.min(v[2], 40))
+			anchor:SetParent(overlay)
+			anchor:SetPoint(point, overlay, point)
+			anchor:Hide()
+		end
+	end
+
+	return overlay
+end
+
 function IFrameManager:Enable()
 	if (self.isEnabled) then
 		return
 	end
 	
 	for frame, iface in pairs(self.List) do
-		frame.IFrameManager = IFrameFactory:Create("IFrameManager", "Overlay")
-		frame.IFrameManager.Parent = frame
-
-		local t, r, b, l = iface:getBorder(frame)
-		frame.IFrameManager:SetWidth(frame:GetWidth() + l + r)
-		frame.IFrameManager:SetHeight(frame:GetHeight() + t + b)
-		frame.IFrameManager:SetParent(UIParent)
-		frame.IFrameManager:SetScale(frame:GetScale())
-
-		frame.IFrameManager.label:SetWidth(frame.IFrameManager:GetWidth())
-		frame.IFrameManager.label:SetText(iface:getName(frame))
-
-		frame.IFrameManager:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", -l, -b)
-
-		-- Set up the anchors
-		local anchors = { { }, { } }
-
-		local height = frame.IFrameManager:GetHeight()
-		if (height >= 3 * 18) then
-			table.insert(anchors[1], { "TOP", 16 })
-			table.insert(anchors[1], { "", height - 2 * 18 })
-			table.insert(anchors[1], { "BOTTOM", 16 })
-		elseif (height >= 2 * 16) then
-			table.insert(anchors[1], { "TOP", 16 })
-			table.insert(anchors[1], { "BOTTOM", 16 })
-		else
-			table.insert(anchors[1], { "", height })
-		end
-
-		local width = frame.IFrameManager:GetWidth()
-		if (width >= 3 * 18) then
-			table.insert(anchors[2], { "LEFT", 16 })
-			table.insert(anchors[2], { "", width - 2 * 18 })
-			table.insert(anchors[2], { "RIGHT", 16 })
-		elseif (width >= 2 * 18) then
-			table.insert(anchors[2], { "LEFT", 16 })
-			table.insert(anchors[2], { "RIGHT", 16 })
-		else
-			table.insert(anchors[2], { "", width })
-		end
-
-		frame.IFrameManager.Anchors = { }
-		for _, v in pairs(anchors[1]) do
-			for _, h in pairs(anchors[2]) do
-				local point = v[1] == "" and h[1] == "" and "CENTER" or v[1]..h[1]
-				local anchor = IFrameFactory:Create("IFrameManager", "Anchor")
-				frame.IFrameManager.Anchors[anchor] = point
-
-				anchor:SetWidth(math.min(h[2], 40))
-				anchor:SetHeight(math.min(v[2], 40))
-				anchor:SetParent(frame.IFrameManager)
-				anchor:Hide()
-				anchor:SetPoint(point, frame.IFrameManager, point)
-			end
-		end
+		frame.IFrameManager = CreateOverlay(frame, iface)
 	end
 
-	UIParent.IFrameManager = IFrameFactory:Create("IFrameManager", "Overlay")
-	UIParent.IFrameManager.Parent = UIParent
-
-	local anchorPoints = {
-		["TOPLEFT"]	= { 16, 16 },
-		["LEFT"]	= { 16, 40 },
-		["BOTTOMLEFT"]	= { 16, 16 },
-		["TOP"]		= { 40, 16 },
-		["CENTER"]	= { 40, 40 },
-		["BOTTOM"]	= { 40, 16 },
-		["TOPRIGHT"]	= { 16, 16 },
-		["RIGHT"]	= { 16, 40 },
-		["BOTTOMRIGHT"]	= { 16, 16 },
-	}
-
-	UIParent.IFrameManager.Anchors = { }
-	for k, v in pairs(anchorPoints) do
-		local anchor = IFrameFactory:Create("IFrameManager", "Anchor")
-		UIParent.IFrameManager.Anchors[anchor] = k
-
-		anchor:SetWidth(v[1])
-		anchor:SetHeight(v[2])
-		anchor:SetParent(UIParent.IFrameManager)
-		anchor:Hide()
-		anchor:SetPoint(k, UIParent, k)
-	end
+	UIParent.IFrameManager:Hide()
 
 	self.isEnabled = true
 end
@@ -190,11 +173,6 @@ function IFrameManager:Disable()
 		IFrameFactory:Destroy("IFrameManager", "Overlay", frame.IFrameManager)
 		frame.IFrameManager = nil
 	end
-
-	for anchor in pairs(UIParent.IFrameManager.Anchors) do
-		IFrameFactory:Destroy("IFrameManager", "Anchor", anchor)
-	end
-	IFrameFactory:Destroy("IFrameManager", "Overlay", UIParent.IFrameManager)
 
 	self.isEnabled = nil
 end

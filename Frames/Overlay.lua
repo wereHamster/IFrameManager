@@ -2,6 +2,13 @@
 local FactoryInterface = { }
 IFrameFactory("1.0"):Register("IFrameManager", "Overlay", FactoryInterface)
 
+local backdropTable = {
+	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+	edgeFile = "Interface\\AddOns\\IFrameManager\\Textures\\Border2.tga",
+	tile = true, tileSize = 12, edgeSize = 12,
+	insets = { left = 2, right = 2, top = 2, bottom = 2 }
+}
+
 local function framesOverlap(frameA, frameB)
 	local sA, sB = frameA:GetEffectiveScale(), frameB:GetEffectiveScale()
 	return ((frameA:GetLeft()*sA) < (frameB:GetRight()*sB))
@@ -150,20 +157,6 @@ local function OnMouseUp()
 	end
 end
 
-
-local backdropTable = {
-	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-	edgeFile = "Interface\\AddOns\\IFrameManager\\Textures\\Border2.tga",
-	tile = true,
-	tileSize = 12,
-	edgeSize = 12,
-	insets = {
-		left = 1,
-		right = 1,
-		top = 1,
-		bottom = 1,
-	}
-}
 
 function FactoryInterface:Create()
 	local frame = CreateFrame("Frame", nil, UIParent)

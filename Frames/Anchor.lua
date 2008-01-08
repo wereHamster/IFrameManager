@@ -2,18 +2,6 @@
 local FactoryInterface = { }
 IFrameFactory("1.0"):Register("IFrameManager", "Anchor", FactoryInterface)
 
-local anchorPoints = {
-	["TOPLEFT"]	= function(self) return self:GetLeft(), self:GetTop() end,
-	["LEFT"]	= function(self) return self:GetLeft(), self:GetBottom() + self:GetHeight() / 2 end,
-	["BOTTOMLEFT"]	= function(self) return self:GetLeft(), self:GetBottom() end,
-	["TOP"]		= function(self) return self:GetLeft() + self:GetWidth() / 2, self:GetTop() end,
-	["CENTER"]	= function(self) return self:GetLeft() + self:GetWidth() / 2, self:GetBottom() + self:GetHeight() / 2 end,
-	["BOTTOM"]	= function(self) return self:GetLeft() + self:GetWidth() / 2, self:GetBottom() end,
-	["TOPRIGHT"]	= function(self) return self:GetRight(), self:GetTop() end,
-	["RIGHT"]	= function(self) return self:GetRight(), self:GetBottom() + self:GetHeight() / 2 end,
-	["BOTTOMRIGHT"]	= function(self) return self:GetRight(), self:GetBottom() end,
-}
-
 local backdropTable = {
 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 	edgeFile = "Interface\\AddOns\\IFrameManager\\Textures\\Border2.tga",
@@ -75,11 +63,13 @@ local function OnLeave(self)
 end
 
 function FactoryInterface:Create()
-	local frame = CreateFrame("Frame", nil, frame)
+	local frame = CreateFrame("Frame", nil, UIParent)
 
 	frame:SetWidth(16)
 	frame:SetHeight(16)
 	frame:EnableMouse(true)
+
+	frame:SetFrameStrata("HIGH")
 
 	frame:SetBackdrop(backdropTable)
 	frame:SetBackdropBorderColor(0.8, 0.8, 0.8, 1)
