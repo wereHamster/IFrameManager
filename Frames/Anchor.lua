@@ -17,15 +17,8 @@ local anchorPoints = {
 local backdropTable = {
 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
 	edgeFile = "Interface\\AddOns\\IFrameManager\\Textures\\Border2.tga",
-	tile = true,
-	tileSize = 12,
-	edgeSize = 12,
-	insets = {
-		left = 2,
-		right = 2,
-		top = 2,
-		bottom = 2
-	}
+	tile = true, tileSize = 12, edgeSize = 12,
+	insets = { left = 2, right = 2, top = 2, bottom = 2 }
 }
 
 local function OnShow(self)
@@ -51,7 +44,8 @@ local function OnMouseDown(self)
 	local src = IFrameManager.Source:GetParent()
 	if (src == self:GetParent()) then
 		DEFAULT_CHAT_FRAME:AddMessage("resetting layout")
-		IFrameManagerLayout[src.Parent:GetName()] = nil
+		IFrameManagerLayout[src.Parent:GetName()] = { "CENTER", "UIParent", "CENTER" }
+		IFrameManager:Update(src.Parent)
 		return
 	end
 
@@ -62,12 +56,11 @@ local function OnMouseDown(self)
 		return
 	end
 
-	local sA, dA = src.Anchors[IFrameManager.Source], dst.Anchors[self]
-	local sX, sY = anchorPoints[sA](src.Parent)
-	local dX, dY = anchorPoints[dA](dst.Parent)
-	IFrameManagerLayout[src.Parent:GetName()] = {
-		sA, dst.Parent:GetName(), dA, sX - dX, sY - dY
-	}
+	local layout = IFrameManagerLayout[src.Parent:GetName()]
+	layout[1] = src.Anchors[IFrameManager.Source]
+	layout[2] = dst.Parent:GetName()
+	layout[3] = dst.Anchors[self]
+	IFrameManager:Update(src.Parent)
 
 	IFrameManager.Source:SetBackdropColor(0.4, 0.4, 0.4, 1)
 	self:SetBackdropColor(0.4, 0.4, 0.4, 1)

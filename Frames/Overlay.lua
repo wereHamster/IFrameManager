@@ -80,7 +80,7 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 	frameThis.Parent:ClearAllPoints()
 	frameThis.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xT + xO, yT + yO)
 	this.Parent:GetCenter()
-	
+
 	return math.min(xSet, lastXDiff), math.min(ySet, lastYDiff)
 end
 
@@ -88,8 +88,6 @@ local function OnMouseDown()
 	if (this.Parent:GetName() == nil) then
 		return
 	end
-
-	IFrameManagerLayout[this.Parent:GetName()] = nil
 
 	local xCur, yCur = GetCursorPosition()
 	local xCenter, yCenter = this.Parent:GetCenter()
@@ -148,9 +146,7 @@ end
 local function OnMouseUp()
 	if (this.Offset) then
 		this.Offset = nil
-		IFrameManagerLayout[this.Parent:GetName()] = {
-			"BOTTOMLEFT", "UIParent", "BOTTOMLEFT", this.Parent:GetLeft(), this.Parent:GetBottom()
-		}
+		IFrameManager:Update(this.Parent)
 	end
 end
 
