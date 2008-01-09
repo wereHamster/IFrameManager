@@ -5,6 +5,7 @@ IFrameManager = { List = { } }
 IFrameManagerLayout = { }
 
 
+
 --[[
 		IFrameManager:Interface()
 
@@ -28,6 +29,7 @@ function IFrameManager:Interface()
 end
 
 
+
 --[[
 		IFrameManager:Register()
 
@@ -38,6 +40,7 @@ function IFrameManager:Register(frame, iface)
 	self.List[frame] = iface
 	IFrameManagerLayout[frame:GetName()] = IFrameManagerLayout[frame:GetName()] or { "CENTER", "UIParent", "CENTER", 0, 0 }
 end
+
 
 
 --[[
@@ -123,6 +126,13 @@ function IFrameManager:Enable()
 	self.isEnabled = true
 end
 
+
+
+--[[
+		IFrameManager:Update()
+
+	Updates the anchors and position of a frame.
+]]
 local AnchorCoordinates = {
 	["TOPLEFT"]	= function(self) return self:GetLeft(), self:GetTop() end,
 	["LEFT"]	= function(self) return self:GetLeft(), self:GetBottom() + self:GetHeight() / 2 end,
@@ -135,11 +145,6 @@ local AnchorCoordinates = {
 	["BOTTOMRIGHT"]	= function(self) return self:GetRight(), self:GetBottom() end,
 }
 
---[[
-		IFrameManager:Update()
-
-	Updates the anchors and position of a frame.
-]]
 function IFrameManager:Update(frame)
 	local layout = IFrameManagerLayout[frame:GetName()]
 
@@ -155,6 +160,7 @@ function IFrameManager:Update(frame)
 	frame:ClearAllPoints()
 	frame:SetPoint(a1, a2, a3, a4 / s, a5 / s)
 end
+
 
 
 --[[
@@ -244,8 +250,11 @@ local function onUpdate(self)
 
 	for name, layout in pairs(IFrameManagerLayout) do
 		local frame = getglobal(name)
-		if (frame and getglobal(layout[2])) then
-			local layout = IFrameManagerLayout[frame:GetName()]
+		if (frame) then
+			local target = getglobal(layout[2])
+			if (target == nil) then	
+				layout[2] = "UIParent"
+			end
 
 			local s = frame:GetEffectiveScale()
 			local a1, a2, a3, a4, a5 = unpack(layout)

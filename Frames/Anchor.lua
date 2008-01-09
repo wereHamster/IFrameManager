@@ -13,7 +13,23 @@ local function OnShow(self)
 	self:SetBackdropColor(0.4, 0.4, 0.4, 1)
 end
 
+local function getAnchor(self, loc)
+	for frame, anchor in pairs(self.Anchors) do
+		if (anchor == loc) then
+			return frame
+		end
+	end
+end
+
 local function OnEnter(self)
+	local layout = IFrameManagerLayout[self:GetParent().Parent:GetName()]
+	if (layout) then
+		getAnchor(self:GetParent(), layout[1]):SetBackdropColor(1, 0.4, 0.4, 1)
+
+		local target = getglobal(layout[2])
+		getAnchor(target.IFrameManager, layout[3]):SetBackdropColor(1, 0.4, 0.4, 1)
+	end
+
 	self:SetBackdropColor(0, 1, 0)
 end
 
@@ -41,8 +57,15 @@ local function OnMouseDown(self)
 	local src = IFrameManager.Source:GetParent()
 	if (src == self:GetParent()) then
 		DEFAULT_CHAT_FRAME:AddMessage("resetting layout")
+
+		self:GetScript("OnLeave")(self)
+		IFrameManager.Source:SetBackdropColor(0.4, 0.4, 0.4, 1)
+
 		IFrameManagerLayout[src.Parent:GetName()] = { "CENTER", "UIParent", "CENTER", 0, 0 }
 		IFrameManager:Update(src.Parent)
+
+		self:GetScript("OnEnter")(self)
+
 		return
 	end
 
@@ -65,6 +88,14 @@ local function OnMouseDown(self)
 end
 
 local function OnLeave(self)
+	local layout = IFrameManagerLayout[self:GetParent().Parent:GetName()]
+	if (layout) then
+		getAnchor(self:GetParent(), layout[1]):SetBackdropColor(0.4, 0.4, 0.4, 1)
+
+		local target = getglobal(layout[2])
+		getAnchor(target.IFrameManager, layout[3]):SetBackdropColor(0.4, 0.4, 0.4, 1)
+	end
+
 	if (IFrameManager.Source ~= self) then
 		self:SetBackdropColor(0.4, 0.4, 0.4, 1)
 	end
