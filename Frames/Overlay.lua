@@ -91,20 +91,8 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 	return math.min(xSet, lastXDiff), math.min(ySet, lastYDiff)
 end
 
-local function getAnchor(self, loc)
-	for frame, anchor in pairs(self.Anchors) do
-		if (anchor == loc) then
-			return frame
-		end
-	end
-end
-
 local function OnEnter(self)
-	local layout = IFrameManagerLayout[self.Parent:GetName()]
-	getAnchor(self, layout[1]):SetBackdropColor(1, 0.4, 0.4, 1)
-
-	local target = getglobal(layout[2])
-	getAnchor(target.IFrameManager, layout[3]):SetBackdropColor(1, 0.4, 0.4, 1)
+	IFrameManager:Highlight(self)
 end
 
 local function OnMouseDown()
@@ -171,11 +159,7 @@ local function OnMouseUp()
 end
 
 local function OnLeave(self)
-	local layout = IFrameManagerLayout[self.Parent:GetName()]
-	getAnchor(self, layout[1]):SetBackdropColor(0.4, 0.4, 0.4, 1)
-
-	local target = getglobal(layout[2])
-	getAnchor(target.IFrameManager, layout[3]):SetBackdropColor(0.4, 0.4, 0.4, 1)
+	IFrameManager:Highlight(self)
 end
 
 function FactoryInterface:Create()

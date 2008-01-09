@@ -129,6 +129,60 @@ end
 
 
 --[[
+		IFrameManager:Highlight()
+
+	Updates the highlight colors of the frame and anchors.
+]]
+
+local function ColorizeAnchor(self, loc, ...)
+	for frame, anchor in pairs(self.Anchors) do
+		if (anchor == loc) then
+			return frame:SetBackdropColor(...)
+		end
+	end
+end
+
+function IFrameManager:Highlight(frame)
+	if (frame ~= UIParent.IFrameManager) then
+		frame:SetBackdropColor(0, 0, 0, 1)
+	end
+
+	for anchor in pairs(frame.Anchors) do
+		anchor:SetBackdropColor(0.4, 0.4, 0.4, 1)
+	end
+
+	local layout = IFrameManagerLayout[frame.Parent:GetName()]
+	if (layout) then
+		local target = getglobal(layout[2])
+		if (MouseIsOver(frame)) then
+			if (target ~= UIParent) then
+				target.IFrameManager:SetBackdropColor(1, 0.4, 0.4, 1)
+			end
+
+			ColorizeAnchor(frame, layout[1], 1, 1, 0.4, 1)
+			ColorizeAnchor(target.IFrameManager, layout[3], 1, 1, 0.4, 1)
+		else
+			if (target ~= UIParent) then
+				target.IFrameManager:SetBackdropColor(0, 0, 0, 1)
+			end
+
+			ColorizeAnchor(frame, layout[1], 0.4, 0.4, 0.4, 1)
+			ColorizeAnchor(target.IFrameManager, layout[3], 0.4, 0.4, 0.4, 1)
+		end
+	end
+
+	if (IFrameManager.Source) then
+		IFrameManager.Source:SetBackdropColor(0.4, 1, 1, 1)
+	end
+
+	for anchor in pairs(frame.Anchors) do
+		if (MouseIsOver(anchor)) then
+			anchor:SetBackdropColor(0, 1, 0, 1)
+		end
+	end
+end
+
+--[[
 		IFrameManager:Update()
 
 	Updates the anchors and position of a frame.
@@ -214,31 +268,17 @@ local function onEvent(self, event, ...)
 					for anchor, point in pairs(frame.IFrameManager.Anchors) do
 						anchor:Show()
 					end
-				end
-			end
 
-			if (UIParent.IFrameManager) then
-				for anchor, point in pairs(UIParent.IFrameManager.Anchors) do
-					anchor:Show()
+					IFrameManager:Highlight(frame.IFrameManager)
 				end
 			end
 		else
-			if (IFrameManager.Source) then
-				IFrameManager.Source:SetBackdropColor(1.0, 0.82, 0)
-			end
-
 			for frame, iface in pairs(IFrameManager.List) do
 				if (frame.IFrameManager) then
 					frame.IFrameManager.label:Show()
 					for anchor in pairs(frame.IFrameManager.Anchors) do
 						anchor:Hide()
 					end
-				end
-			end
-
-			if (UIParent.IFrameManager) then
-				for anchor, point in pairs(UIParent.IFrameManager.Anchors) do
-					anchor:Hide()
 				end
 			end
 		end

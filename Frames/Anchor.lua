@@ -10,27 +10,11 @@ local backdropTable = {
 }
 
 local function OnShow(self)
-	self:SetBackdropColor(0.4, 0.4, 0.4, 1)
-end
-
-local function getAnchor(self, loc)
-	for frame, anchor in pairs(self.Anchors) do
-		if (anchor == loc) then
-			return frame
-		end
-	end
+	--self:SetBackdropColor(0.4, 0.4, 0.4, 1)
 end
 
 local function OnEnter(self)
-	local layout = IFrameManagerLayout[self:GetParent().Parent:GetName()]
-	if (layout) then
-		getAnchor(self:GetParent(), layout[1]):SetBackdropColor(1, 0.4, 0.4, 1)
-
-		local target = getglobal(layout[2])
-		getAnchor(target.IFrameManager, layout[3]):SetBackdropColor(1, 0.4, 0.4, 1)
-	end
-
-	self:SetBackdropColor(0, 1, 0)
+	IFrameManager:Highlight(self:GetParent())
 end
 
 local function getRoot(frame)
@@ -39,15 +23,14 @@ local function getRoot(frame)
 		return frame
 	end
 
-	return getRoot(getglobal(layout[2]))
+	local root, parent = getRoot(getglobal(layout[2]))
+	return root, parent or frame
 end
 
 local function OnMouseDown(self)
 	if (IFrameManager.Source == nil) then
-		if (self:GetParent().Parent:GetName() == nil) then
-			DEFAULT_CHAT_FRAME:AddMessage("invalid source")
-			self:SetBackdropColor(0.4, 0.4, 0.4, 1)
-			return
+		if (self:GetParent().Parent == UIParent) then
+			return DEFAULT_CHAT_FRAME:AddMessage("invalid source")
 		end
 
 		IFrameManager.Source = self
@@ -58,20 +41,20 @@ local function OnMouseDown(self)
 	if (src == self:GetParent()) then
 		DEFAULT_CHAT_FRAME:AddMessage("resetting layout")
 
-		self:GetScript("OnLeave")(self)
-		IFrameManager.Source:SetBackdropColor(0.4, 0.4, 0.4, 1)
-
+		local parent = getglobal(IFrameManagerLayout[src.Parent:GetName()][2])
 		IFrameManagerLayout[src.Parent:GetName()] = { "CENTER", "UIParent", "CENTER", 0, 0 }
 		IFrameManager:Update(src.Parent)
 
-		self:GetScript("OnEnter")(self)
+		IFrameManager.Source = nil
+		IFrameManager:Highlight(self:GetParent())
+		IFrameManager:Highlight(parent.IFrameManager)
 
 		return
 	end
 
 	local dst = self:GetParent()
 	if (dst.Parent ~= UIParent and src.Parent == getRoot(dst.Parent)) then
-		DEFAULT_CHAT_FRAME:AddMessage("circular dependency")
+		DEFAULT_CHAT_FRAME:AddMessage("circular dependency: "..(select(2, getRoot(dst.Parent)):GetName()))
 		return
 	end
 
@@ -81,24 +64,13 @@ local function OnMouseDown(self)
 	layout[3] = dst.Anchors[self]
 	IFrameManager:Update(src.Parent)
 
-	IFrameManager.Source:SetBackdropColor(0.4, 0.4, 0.4, 1)
-	self:SetBackdropColor(0.4, 0.4, 0.4, 1)
-
 	IFrameManager.Source = nil
+	IFrameManager:Highlight(src)	
+	IFrameManager:Highlight(dst)
 end
 
 local function OnLeave(self)
-	local layout = IFrameManagerLayout[self:GetParent().Parent:GetName()]
-	if (layout) then
-		getAnchor(self:GetParent(), layout[1]):SetBackdropColor(0.4, 0.4, 0.4, 1)
-
-		local target = getglobal(layout[2])
-		getAnchor(target.IFrameManager, layout[3]):SetBackdropColor(0.4, 0.4, 0.4, 1)
-	end
-
-	if (IFrameManager.Source ~= self) then
-		self:SetBackdropColor(0.4, 0.4, 0.4, 1)
-	end
+	IFrameManager:Highlight(self:GetParent())
 end
 
 function FactoryInterface:Create()
