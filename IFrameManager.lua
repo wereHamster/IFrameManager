@@ -39,8 +39,6 @@ function IFrameManager:Register(frame, iface)
 	IFrameManagerLayout[frame:GetName()] = IFrameManagerLayout[frame:GetName()] or { "CENTER", "UIParent", "CENTER" }
 end
 
-IFrameManager:Register(UIParent, IFrameManager:Interface())
-
 
 --[[
 		IFrameManager:Enable()
@@ -53,14 +51,14 @@ IFrameManager:Register(UIParent, IFrameManager:Interface())
 
 local function CreateOverlay(frame, iface)
 	local overlay = IFrameFactory:Create("IFrameManager", "Overlay")
-	overlay = IFrameFactory:Create("IFrameManager", "Overlay")
 	overlay.Parent = frame
 
 	local t, r, b, l = iface:getBorder(frame)
-	overlay:SetWidth(frame:GetWidth() + l + r)
-	overlay:SetHeight(frame:GetHeight() + t + b)
-	overlay:SetScale(frame:GetScale())
 	overlay:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", -l, -b)
+	overlay:SetPoint("TOPRIGHT", frame, "TOPRIGHT", t, r)
+
+	overlay:EnableMouse(true)
+	overlay:SetBackdropColor(0, 0, 0, 1)
 
 	overlay.label:SetWidth(overlay:GetWidth())
 	overlay.label:SetText(iface:getName(frame))
@@ -119,7 +117,8 @@ function IFrameManager:Enable()
 		frame.IFrameManager = CreateOverlay(frame, iface)
 	end
 
-	UIParent.IFrameManager:Hide()
+	UIParent.IFrameManager:EnableMouse(false)
+	UIParent.IFrameManager:SetBackdropColor(0, 0, 0, 0)
 
 	self.isEnabled = true
 end
@@ -144,14 +143,17 @@ local AnchorCoordinates = {
 function IFrameManager:Update(frame)
 	local layout = IFrameManagerLayout[frame:GetName()]
 
+	local s, r = frame:GetEffectiveScale(), getglobal(layout[2]):GetEffectiveScale()
 	local sX, sY = AnchorCoordinates[layout[1]](frame)
 	local dX, dY = AnchorCoordinates[layout[3]](getglobal(layout[2]))
+	
+	layout[4] = sX * s - dX * r
+	layout[5] = sY * s - dY * r
 
-	layout[4] = sX - dX
-	layout[5] = sY - dY
+	local a1, a2, a3, a4, a5 = unpack(layout)
 
 	frame:ClearAllPoints()
-	frame:SetPoint(unpack(layout))
+	frame:SetPoint(a1, a2, a3, a4 / s, a5 / s)
 end
 
 
@@ -186,21 +188,16 @@ function IFrameManager:Toggle()
 end
 
 
-SLASH_IFrameManager1 = "/ifm"
 
-SlashCmdList["IFrameManager"] = function(msg)
-	if (msg == "start") then
-		IFrameManager:Enable()
-	elseif (msg == "stop") then
-		IFrameManager:Disable()
-	else
-		IFrameManager:Toggle()
+--[[
+	Event handling
+]]
+local function onEvent(self, event, ...)
+	if (event == "VARIABLES_LOADED") then
+		return this:Show()
 	end
-end
 
-local eventFrame = CreateFrame("Frame")
-eventFrame:RegisterEvent("MODIFIER_STATE_CHANGED")
-eventFrame:SetScript("OnEvent", function(self, event, key, value)
+	local key, value = select(1, ...), select(2, ...)
 	if (key == "LCTRL") then
 		if (value == 1) then
 			IFrameManager.Source = nil
@@ -240,17 +237,48 @@ eventFrame:SetScript("OnEvent", function(self, event, key, value)
 			end
 		end
 	end
-end)
+end
 
-local eventFrame = CreateFrame("Frame")
-eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-eventFrame:SetScript("OnEvent", function(self, event)
-	for name, data in pairs(IFrameManagerLayout) do
-		local src = getglobal(name)
-		if (src) then
-			src:ClearAllPoints()
-			src:SetPoint(unpack(data))
+local function onUpdate(self)
+	self:Hide()
+
+	for name, layout in pairs(IFrameManagerLayout) do
+		local frame = getglobal(name)
+		if (frame and getglobal(layout[2])) then
+			local layout = IFrameManagerLayout[frame:GetName()]
+
+			local s = frame:GetEffectiveScale()
+			local a1, a2, a3, a4, a5 = unpack(layout)
+
+			frame:ClearAllPoints()
+			frame:SetPoint(a1, a2, a3, a4 / s, a5 / s)
 		end
 	end
-end)
- 
+end
+
+IFrameManager.Slave = CreateFrame("Frame")
+IFrameManager.Slave:RegisterEvent("VARIABLES_LOADED")
+IFrameManager.Slave:RegisterEvent("MODIFIER_STATE_CHANGED")
+
+IFrameManager.Slave:SetScript("OnEvent", onEvent)
+IFrameManager.Slave:SetScript("OnUpdate", onUpdate)
+
+
+
+--[[
+	UIParent is special. We can't use IFrameManager:Register() because
+	that would load a default layout that has UIParent as its parent,
+	which would create a circular dependency.
+]]
+IFrameManager.List[UIParent] = IFrameManager:Interface()
+
+
+
+--[[
+	FIXME: Find a better solution, get someone to write a nice UI.
+]]
+SLASH_IFrameManager1 = "/ifm"
+SlashCmdList["IFrameManager"] = function()
+	IFrameManager:Toggle()
+end
+

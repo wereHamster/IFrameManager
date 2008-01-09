@@ -104,10 +104,7 @@ local function OnMouseDown()
 end
 
 local function updatePosition(frame)
-	frame:ClearAllPoints()
-
-	local data = IFrameManagerLayout[frame:GetName()]
-	frame:SetPoint(unpack(data))
+	IFrameManager:Update(frame)
 
 	for src, data in pairs(IFrameManagerLayout) do
 		if (data[2] == frame:GetName()) then
@@ -160,14 +157,7 @@ end
 
 function FactoryInterface:Create()
 	local frame = CreateFrame("Frame", nil, UIParent)
-	frame:SetWidth(32)
-	frame:SetHeight(32)
-	
-	frame:SetPoint("CENTER", UIParent)
-	
 	frame:EnableMouse(true)
-	frame:SetMovable(true)
-	
 	frame:SetFrameStrata("HIGH")
 
 	frame:SetBackdrop(backdropTable)

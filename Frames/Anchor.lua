@@ -17,6 +17,15 @@ local function OnEnter(self)
 	self:SetBackdropColor(0, 1, 0)
 end
 
+local function getRoot(frame)
+	local layout = IFrameManagerLayout[frame:GetName()]
+	if (layout[2] == "UIParent") then
+		return frame
+	end
+
+	return getRoot(getglobal(layout[2]))
+end
+
 local function OnMouseDown(self)
 	if (IFrameManager.Source == nil) then
 		if (self:GetParent().Parent:GetName() == nil) then
@@ -32,14 +41,13 @@ local function OnMouseDown(self)
 	local src = IFrameManager.Source:GetParent()
 	if (src == self:GetParent()) then
 		DEFAULT_CHAT_FRAME:AddMessage("resetting layout")
-		IFrameManagerLayout[src.Parent:GetName()] = { "CENTER", "UIParent", "CENTER" }
+		IFrameManagerLayout[src.Parent:GetName()] = { "CENTER", "UIParent", "CENTER", 0, 0 }
 		IFrameManager:Update(src.Parent)
 		return
 	end
 
 	local dst = self:GetParent()
-	local data = IFrameManagerLayout[dst.Parent:GetName()]
-	if (data and data[2] == src.Parent:GetName()) then
+	if (src.Parent == getRoot(dst.Parent)) then
 		DEFAULT_CHAT_FRAME:AddMessage("circular dependency")
 		return
 	end
@@ -63,12 +71,8 @@ local function OnLeave(self)
 end
 
 function FactoryInterface:Create()
-	local frame = CreateFrame("Frame", nil, UIParent)
-
-	frame:SetWidth(16)
-	frame:SetHeight(16)
+	local frame = CreateFrame("Frame")
 	frame:EnableMouse(true)
-
 	frame:SetFrameStrata("HIGH")
 
 	frame:SetBackdrop(backdropTable)
