@@ -18,22 +18,22 @@ local function framesOverlap(frameA, frameB)
 end
 
 local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
-	local sT, sC = frameThis:GetEffectiveScale(), frameCandidate:GetEffectiveScale()
-	local lT, tT, rT, bT = frameThis:GetLeft(), frameThis:GetTop(), frameThis:GetRight(), frameThis:GetBottom()
-	local lC, tC, rC, bC = frameCandidate:GetLeft(), frameCandidate:GetTop(), frameCandidate:GetRight(), frameCandidate:GetBottom()
-	
+	local sT, sC, sP = frameThis:GetEffectiveScale(), frameCandidate:GetEffectiveScale(), frameThis.Parent:GetEffectiveScale() 
+	local lT, tT, rT, bT = frameThis:GetLeft() * sT, frameThis:GetTop() * sT, frameThis:GetRight() * sT, frameThis:GetBottom() * sT
+	local lC, tC, rC, bC = frameCandidate:GetLeft() * sC, frameCandidate:GetTop() * sC, frameCandidate:GetRight() * sC, frameCandidate:GetBottom() * sC
+	local hT, hC = frameThis:GetHeight() / 2 * sT, frameCandidate:GetHeight() / 2 * sC
+	local wT, wC = frameThis:GetWidth() / 2 * sT, frameCandidate:GetWidth() / 2 * sC
+
 	local xT, yT = frameThis:GetCenter()
+	xT, yT = xT * sT, yT * sT
 	local xO, yO = frameThis.Parent:GetCenter()
+	xO, yO = xO * sP - xT, yO * sP - yT
+
 	local xC, yC = frameCandidate:GetCenter()
-	local hT, hC = frameThis:GetHeight() / 2, ((frameCandidate:GetHeight() * sC) / sT) / 2
-	local wT, wC = frameThis:GetWidth() / 2, ((frameCandidate:GetWidth() * sC) / sT) / 2
-	
-	lC, tC, rC, bC = (lC * sC) / sT, (tC * sC) / sT, (rC * sC) / sT, (bC * sC) / sT
-	
+	xC, yC = xC * sC, yC * sC
+
 	local xSet, ySet = lastXDiff, lastYDiff
 	local xDiff, yDiff = 0, 0
-
-	xO, yO = xO - xT, yO - yT
 	
 	xDiff = math.abs(rT - lC)
 	if (xDiff < xSet) then
@@ -85,7 +85,7 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 	end
 
 	frameThis.Parent:ClearAllPoints()
-	frameThis.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xT + xO, yT + yO)
+	frameThis.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", (xT + xO) / sP, (yT + yO) / sP)
 	this.Parent:GetCenter()
 
 	return math.min(xSet, lastXDiff), math.min(ySet, lastYDiff)
@@ -127,7 +127,7 @@ local function OnUpdate()
 	-- The overlay won't move unless I do this. OnUpdate bug?
 	this.Parent:GetCenter()
 	
-	local xDiff, yDiff = 10, 10
+	local xDiff, yDiff = 5, 5
 	for frame, iface in pairs(IFrameManager.List) do
 		local data = IFrameManagerLayout[frame:GetName()]
 		if (frame.IFrameManager ~= this and not (data and data[2] == this.Parent:GetName())) then

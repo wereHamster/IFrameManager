@@ -66,7 +66,7 @@ local function CreateOverlay(frame, iface)
 	-- Set up the anchors
 	local anchors = { { }, { } }
 
-	local height = overlay:GetHeight()
+	local height = math.floor(overlay:GetHeight() + 0.5)
 	if (height >= 3 * 18) then
 		table.insert(anchors[1], { "TOP", 16 })
 		table.insert(anchors[1], { "", height - 2 * 18 })
@@ -78,7 +78,7 @@ local function CreateOverlay(frame, iface)
 		table.insert(anchors[1], { "", height })
 	end
 
-	local width = overlay:GetWidth()
+	local width = math.floor(overlay:GetWidth() + 0.5)
 	if (width >= 3 * 18) then
 		table.insert(anchors[2], { "LEFT", 16 })
 		table.insert(anchors[2], { "", width - 2 * 18 })
