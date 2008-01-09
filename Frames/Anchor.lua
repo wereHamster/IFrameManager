@@ -47,7 +47,7 @@ local function OnMouseDown(self)
 	end
 
 	local dst = self:GetParent()
-	if (src.Parent == getRoot(dst.Parent)) then
+	if (dst.Parent ~= UIParent and src.Parent == getRoot(dst.Parent)) then
 		DEFAULT_CHAT_FRAME:AddMessage("circular dependency")
 		return
 	end

@@ -36,7 +36,7 @@ end
 ]]
 function IFrameManager:Register(frame, iface)
 	self.List[frame] = iface
-	IFrameManagerLayout[frame:GetName()] = IFrameManagerLayout[frame:GetName()] or { "CENTER", "UIParent", "CENTER" }
+	IFrameManagerLayout[frame:GetName()] = IFrameManagerLayout[frame:GetName()] or { "CENTER", "UIParent", "CENTER", 0, 0 }
 end
 
 

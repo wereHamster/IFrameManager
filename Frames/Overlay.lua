@@ -127,7 +127,7 @@ local function OnUpdate()
 	-- The overlay won't move unless I do this. OnUpdate bug?
 	this.Parent:GetCenter()
 	
-	local xDiff, yDiff = 5, 5
+	local xDiff, yDiff = 7, 7
 	for frame, iface in pairs(IFrameManager.List) do
 		local data = IFrameManagerLayout[frame:GetName()]
 		if (frame.IFrameManager ~= this and not (data and data[2] == this.Parent:GetName())) then
