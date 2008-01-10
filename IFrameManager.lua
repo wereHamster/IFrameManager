@@ -185,7 +185,8 @@ end
 --[[
 		IFrameManager:Update()
 
-	Updates the anchors and position of a frame.
+	Updates the anchors and position of a frame. Saves the data in the
+	layout cache.
 ]]
 local AnchorCoordinates = {
 	["TOPLEFT"]	= function(self) return self:GetLeft(), self:GetTop() end,
@@ -292,8 +293,12 @@ local function onUpdate(self)
 		local frame = getglobal(name)
 		if (frame) then
 			local target = getglobal(layout[2])
-			if (target == nil) then	
+			if (target == nil) then
+				layout[1] = "CENTER"
 				layout[2] = "UIParent"
+				layout[3] = "CENTER"
+				layout[4] = 0
+				layout[5] = 0
 			end
 
 			local s = frame:GetEffectiveScale()
