@@ -165,7 +165,7 @@ end
 function FactoryInterface:Create()
 	local frame = CreateFrame("Frame", nil, UIParent)
 	frame:EnableMouse(true)
-	frame:SetFrameStrata("HIGH")
+	frame:SetFrameStrata("DIALOG")
 
 	frame:SetBackdrop(backdropTable)
 	frame:SetBackdropBorderColor(0.8, 0.8, 0.8, 1)
