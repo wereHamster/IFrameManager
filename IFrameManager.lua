@@ -326,7 +326,7 @@ local function onEvent(self, event, ...)
 			end
 
 			--[[
-				Since GetMouseFocus() doesn't want to reture the IFM frames,
+				Since GetMouseFocus() doesn't want to return the IFM frames,
 				we use this hack to get the overlays to redraw the highlight.
 			]]
 			for _, overlay in pairs(IFrameManager.Stack) do
