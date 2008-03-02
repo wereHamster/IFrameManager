@@ -119,7 +119,13 @@ function IFrameManager:Enable()
 	self.Stack = { }
 	for frame, iface in pairs(self.Registry) do
 		frame.IFrameManager = CreateOverlay(frame, iface)
-		table.insert(self.Stack, frame.IFrameManager)
+
+		-- Keep the UIParent overlay at the bottom of the stack
+		if (frame == UIParent) then
+			table.insert(self.Stack, 1, frame.IFrameManager)
+		else
+			table.insert(self.Stack, frame.IFrameManager)
+		end
 	end
 
 	UIParent.IFrameManager:EnableMouse(false)
