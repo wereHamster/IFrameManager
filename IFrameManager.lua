@@ -284,7 +284,7 @@ end
 	Event handling
 ]]
 local function onEvent(self, event, ...)
-	if (event == "VARIABLES_LOADED") then
+	if (event == "PLAYER_LOGIN") then
 		for name, layout in pairs(IFrameManagerLayout) do
 			local frame = getglobal(name)
 			if (frame) then
@@ -339,7 +339,7 @@ end
 
 
 IFrameManager.Slave = CreateFrame("Frame")
-IFrameManager.Slave:RegisterEvent("VARIABLES_LOADED")
+IFrameManager.Slave:RegisterEvent("PLAYER_LOGIN")
 IFrameManager.Slave:RegisterEvent("MODIFIER_STATE_CHANGED")
 
 IFrameManager.Slave:SetScript("OnEvent", onEvent)
