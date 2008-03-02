@@ -4,7 +4,7 @@ IFrameFactory("1.0"):Register("IFrameManager", "Overlay", FactoryInterface)
 
 local backdropTable = {
 	bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-	edgeFile = "Interface\\AddOns\\IFrameManager\\Textures\\Border2.tga",
+	edgeFile = "Interface\\AddOns\\IFrameManager\\Textures\\Border.tga",
 	tile = true, tileSize = 12, edgeSize = 12,
 	insets = { left = 2, right = 2, top = 2, bottom = 2 }
 }
