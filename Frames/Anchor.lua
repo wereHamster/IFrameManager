@@ -15,6 +15,12 @@ end
 
 local function OnEnter(self)
 	IFrameManager:Highlight(self:GetParent())
+
+	if (IFrameManager.Soure == self) then
+		self:SetBackdropColor(0, 1, 0, 1)
+	else
+		self:SetBackdropColor(0, 1, 0, 1)
+	end
 end
 
 local function getRoot(frame)
@@ -34,6 +40,8 @@ local function OnMouseDown(self)
 		end
 
 		IFrameManager.Source = self
+		IFrameManager:Highlight(self:GetParent())
+
 		return
 	end
 
@@ -47,7 +55,6 @@ local function OnMouseDown(self)
 
 		IFrameManager.Source = nil
 		IFrameManager:Highlight(self:GetParent())
-		IFrameManager:Highlight(parent.IFrameManager)
 
 		return
 	end
@@ -65,18 +72,18 @@ local function OnMouseDown(self)
 	IFrameManager:Update(src.Parent)
 
 	IFrameManager.Source = nil
-	IFrameManager:Highlight(src)	
 	IFrameManager:Highlight(dst)
 end
 
 local function OnLeave(self)
-	IFrameManager:Highlight(self:GetParent())
+	IFrameManager:Highlight()
 end
 
 function FactoryInterface:Create()
 	local frame = CreateFrame("Frame")
 	frame:EnableMouse(true)
-	frame:SetFrameStrata("HIGH")
+	frame:SetFrameStrata("DIALOG")
+	frame:SetFrameLevel(3)
 
 	frame:SetBackdrop(backdropTable)
 	frame:SetBackdropBorderColor(0.8, 0.8, 0.8, 1)

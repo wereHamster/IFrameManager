@@ -1,7 +1,7 @@
 
 local IFrameFactory = IFrameFactory("1.0")
 
-IFrameManager = { List = { } }
+IFrameManager = { Registry = { } }
 IFrameManagerLayout = { }
 
 
@@ -37,7 +37,7 @@ end
 	interface to remove the frame from the core.
 ]]
 function IFrameManager:Register(frame, iface)
-	self.List[frame] = iface
+	self.Registry[frame] = iface
 	IFrameManagerLayout[frame:GetName()] = IFrameManagerLayout[frame:GetName()] or { "CENTER", "UIParent", "CENTER", 0, 0 }
 end
 
@@ -112,18 +112,18 @@ local function CreateOverlay(frame, iface)
 end
 
 function IFrameManager:Enable()
-	if (self.isEnabled) then
+	if (self.Stack) then
 		return
 	end
-	
-	for frame, iface in pairs(self.List) do
+
+	self.Stack = { }
+	for frame, iface in pairs(self.Registry) do
 		frame.IFrameManager = CreateOverlay(frame, iface)
+		table.insert(self.Stack, frame.IFrameManager)
 	end
 
 	UIParent.IFrameManager:EnableMouse(false)
 	UIParent.IFrameManager:SetBackdropColor(0, 0, 0, 0)
-
-	self.isEnabled = true
 end
 
 
@@ -131,61 +131,85 @@ end
 --[[
 		IFrameManager:Highlight()
 
-	Updates the highlight colors of the frame and anchors.
+	Updates the highlight colors of all overlays and anchors.
 ]]
 
-local function ColorizeAnchor(self, loc, ...)
-	for frame, anchor in pairs(self.Anchors) do
-		if (anchor == loc) then
-			return frame:SetBackdropColor(...)
+local function hiAnchor(overlay, loc, ...)
+	for anchor, pos in pairs(overlay.Anchors) do
+		if (pos == loc) then
+			return anchor:SetBackdropColor(...)
 		end
 	end
 end
 
-function IFrameManager:Highlight(frame)
-	if (frame ~= UIParent.IFrameManager) then
-		frame:SetBackdropColor(0, 0, 0, 1)
+local function hiOverlay(overlay)
+	if (overlay.Parent ~= UIParent) then
+		overlay:SetBackdropColor(0, 0, 0, 1)
 	end
 
-	for anchor in pairs(frame.Anchors) do
+	for anchor in pairs(overlay.Anchors) do
 		anchor:SetBackdropColor(0.4, 0.4, 0.4, 1)
 	end
+end
 
-	local layout = IFrameManagerLayout[frame.Parent:GetName()]
-	if (layout) then
+function IFrameManager:Highlight(overlay)
+	for _, frame in ipairs(self.Stack) do
+		hiOverlay(frame)
+	end
+
+	if (overlay and overlay.Parent ~= UIParent) then
+		local layout = IFrameManagerLayout[overlay.Parent:GetName()]
 		local target = getglobal(layout[2])
-		if (MouseIsOver(frame)) then
-			if (target ~= UIParent) then
-				target.IFrameManager:SetBackdropColor(1, 0.4, 0.4, 1)
-			end
 
-			ColorizeAnchor(frame, layout[1], 1, 1, 0.4, 1)
-			ColorizeAnchor(target.IFrameManager, layout[3], 1, 1, 0.4, 1)
-		else
-			if (target ~= UIParent) then
-				target.IFrameManager:SetBackdropColor(0, 0, 0, 1)
-			end
-
-			ColorizeAnchor(frame, layout[1], 0.4, 0.4, 0.4, 1)
-			ColorizeAnchor(target.IFrameManager, layout[3], 0.4, 0.4, 0.4, 1)
+		if (target ~= UIParent) then
+			target.IFrameManager:SetBackdropColor(1, 0.4, 0.4, 1)
 		end
+
+		hiAnchor(overlay, layout[1], 1, 1, 0.4, 1)
+		hiAnchor(target.IFrameManager, layout[3], 1, 1, 0.4, 1)
 	end
 
 	if (IFrameManager.Source) then
 		IFrameManager.Source:SetBackdropColor(0.4, 1, 1, 1)
 	end
+end
 
-	for anchor in pairs(frame.Anchors) do
-		if (MouseIsOver(anchor)) then
-			anchor:SetBackdropColor(0, 1, 0, 1)
+
+
+--[[
+		IFrameManager:Raise()
+
+	Raises the frame to the top of the stack.
+]]
+
+local function overlayIndex(overlay)
+	for index, frame in ipairs(IFrameManager.Stack) do
+		if (frame == overlay) then
+			return index
 		end
 	end
 end
 
+function IFrameManager:Raise(frame)
+	local index = overlayIndex(frame.IFrameManager)
+	table.remove(self.Stack, index)
+	table.insert(self.Stack, frame.IFrameManager)
+
+	for index, overlay in ipairs(self.Stack) do
+		overlay:SetFrameLevel(index)
+
+		for anchor in pairs(overlay.Anchors) do
+			anchor:SetFrameLevel(index + 1)
+		end
+	end
+end
+
+
+
 --[[
 		IFrameManager:Update()
 
-	Updates the anchors and position of a frame. Saves the data in the
+	Updates the anchors and position of the frame. Saves the data in the
 	layout cache.
 ]]
 local AnchorCoordinates = {
@@ -224,24 +248,24 @@ end
 	Disengages the edit mode. Destroys the overlay frames and anchors.
 ]]
 function IFrameManager:Disable()
-	if (self.isEnabled == nil) then
+	if (self.Stack == nil) then
 		return
 	end
 
-	for frame, iface in pairs(self.List) do
-		for anchor in pairs(frame.IFrameManager.Anchors) do
+	for _, overlay in pairs(self.Stack) do
+		for anchor in pairs(overlay.Anchors) do
 			IFrameFactory:Destroy("IFrameManager", "Anchor", anchor)
 		end
 
-		IFrameFactory:Destroy("IFrameManager", "Overlay", frame.IFrameManager)
-		frame.IFrameManager = nil
+		IFrameFactory:Destroy("IFrameManager", "Overlay", overlay)
+		overlay.Parent.IFrameManager = nil
 	end
 
-	self.isEnabled = nil
+	self.Stack = nil
 end
 
 function IFrameManager:Toggle()
-	if (self.isEnabled) then
+	if (self.Stack) then
 		IFrameManager:Disable()
 	else
 		IFrameManager:Enable()
@@ -255,67 +279,64 @@ end
 ]]
 local function onEvent(self, event, ...)
 	if (event == "VARIABLES_LOADED") then
-		return this:Show()
-	end
+		for name, layout in pairs(IFrameManagerLayout) do
+			local frame = getglobal(name)
+			if (frame) then
+				local target = getglobal(layout[2])
+				if (target == nil) then
+					layout[1] = "CENTER"
+					layout[2] = "UIParent"
+					layout[3] = "CENTER"
+					layout[4] = 0
+					layout[5] = 0
+				end
 
-	local key, value = select(1, ...), select(2, ...)
-	if (key == "LCTRL") then
-		if (value == 1) then
+				local s = frame:GetEffectiveScale()
+				local a1, a2, a3, a4, a5 = unpack(layout)
+
+				frame:ClearAllPoints()
+				frame:SetPoint(a1, a2, a3, a4 / s, a5 / s)
+			end
+		end
+	elseif (event == "MODIFIER_STATE_CHANGED") then
+		local key, value = ...
+		if (key == "LCTRL" and IFrameManager.Stack) then
 			IFrameManager.Source = nil
 
-			for frame, iface in pairs(IFrameManager.List) do
-				if (frame.IFrameManager) then
-					frame.IFrameManager.label:Hide()
-					for anchor, point in pairs(frame.IFrameManager.Anchors) do
+			if (value == 1) then
+				for _, overlay in pairs(IFrameManager.Stack) do
+					overlay.label:Hide()
+					for anchor in pairs(overlay.Anchors) do
 						anchor:Show()
 					end
-
-					IFrameManager:Highlight(frame.IFrameManager)
 				end
-			end
-		else
-			for frame, iface in pairs(IFrameManager.List) do
-				if (frame.IFrameManager) then
-					frame.IFrameManager.label:Show()
-					for anchor in pairs(frame.IFrameManager.Anchors) do
+			else
+				for _, overlay in pairs(IFrameManager.Stack) do
+					overlay.label:Show()
+					for anchor in pairs(overlay.Anchors) do
 						anchor:Hide()
 					end
 				end
 			end
-		end
-	end
-end
 
-local function onUpdate(self)
-	self:Hide()
-
-	for name, layout in pairs(IFrameManagerLayout) do
-		local frame = getglobal(name)
-		if (frame) then
-			local target = getglobal(layout[2])
-			if (target == nil) then
-				layout[1] = "CENTER"
-				layout[2] = "UIParent"
-				layout[3] = "CENTER"
-				layout[4] = 0
-				layout[5] = 0
+			--[[
+				Since GetMouseFocus() doesn't want to reture the IFM frames,
+				we use this hack to get the overlays to redraw the highlight.
+			]]
+			for _, overlay in pairs(IFrameManager.Stack) do
+				overlay:Hide()
+				overlay:Show()
 			end
-
-			local s = frame:GetEffectiveScale()
-			local a1, a2, a3, a4, a5 = unpack(layout)
-
-			frame:ClearAllPoints()
-			frame:SetPoint(a1, a2, a3, a4 / s, a5 / s)
 		end
 	end
 end
+
 
 IFrameManager.Slave = CreateFrame("Frame")
 IFrameManager.Slave:RegisterEvent("VARIABLES_LOADED")
 IFrameManager.Slave:RegisterEvent("MODIFIER_STATE_CHANGED")
 
 IFrameManager.Slave:SetScript("OnEvent", onEvent)
-IFrameManager.Slave:SetScript("OnUpdate", onUpdate)
 
 
 
@@ -324,7 +345,7 @@ IFrameManager.Slave:SetScript("OnUpdate", onUpdate)
 	that would load a default layout that has UIParent as its parent,
 	which would create a circular dependency.
 ]]
-IFrameManager.List[UIParent] = IFrameManager:Interface()
+IFrameManager.Registry[UIParent] = IFrameManager:Interface()
 
 
 

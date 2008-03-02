@@ -95,16 +95,14 @@ local function OnEnter(self)
 	IFrameManager:Highlight(self)
 end
 
-local function OnMouseDown()
-	if (this.Parent:GetName() == nil) then
-		return
-	end
-
+local function OnMouseDown(self)
 	local xCur, yCur = GetCursorPosition()
 	local xCenter, yCenter = this.Parent:GetCenter()
 	local s = this.Parent:GetEffectiveScale()
 
 	this.Offset = { xCenter - xCur / s, yCenter - yCur / s }
+
+	IFrameManager:Raise(self.Parent)
 end
 
 local function updatePosition(frame)
@@ -132,7 +130,7 @@ local function OnUpdate()
 	this.Parent:GetCenter()
 	
 	local xDiff, yDiff = 7, 7
-	for frame, iface in pairs(IFrameManager.List) do
+	for frame, iface in pairs(IFrameManager.Registry) do
 		local data = IFrameManagerLayout[frame:GetName()]
 		if (frame.IFrameManager ~= this and not (data and data[2] == this.Parent:GetName())) then
 			if (framesOverlap(this, frame.IFrameManager)) then
@@ -152,14 +150,12 @@ local function OnUpdate()
 end
 
 local function OnMouseUp()
-	if (this.Offset) then
-		this.Offset = nil
-		IFrameManager:Update(this.Parent)
-	end
+	this.Offset = nil
+	IFrameManager:Update(this.Parent)
 end
 
 local function OnLeave(self)
-	IFrameManager:Highlight(self)
+	IFrameManager:Highlight()
 end
 
 function FactoryInterface:Create()
