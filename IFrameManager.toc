@@ -1,4 +1,4 @@
-## Interface: 20200
+## Interface: 40000
 ## Title: IFrameManager
 ## Author: wereHamster
 ## SavedVariables: IFrameManagerLayout

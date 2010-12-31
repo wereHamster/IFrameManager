@@ -86,7 +86,7 @@ local function snapFrames(frameThis, frameCandidate, lastXDiff, lastYDiff)
 
 	frameThis.Parent:ClearAllPoints()
 	frameThis.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", (xT + xO) / sP, (yT + yO) / sP)
-	this.Parent:GetCenter()
+	frameThis.Parent:GetCenter()
 
 	return math.min(xSet, lastXDiff), math.min(ySet, lastYDiff)
 end
@@ -97,10 +97,10 @@ end
 
 local function OnMouseDown(self)
 	local xCur, yCur = GetCursorPosition()
-	local xCenter, yCenter = this.Parent:GetCenter()
-	local s = this.Parent:GetEffectiveScale()
+	local xCenter, yCenter = self.Parent:GetCenter()
+	local s = self.Parent:GetEffectiveScale()
 
-	this.Offset = { xCenter - xCur / s, yCenter - yCur / s }
+	self.Offset = { xCenter - xCur / s, yCenter - yCur / s }
 
 	IFrameManager:Raise(self.Parent)
 end
@@ -115,43 +115,43 @@ local function updatePosition(frame)
 	end
 end
 
-local function OnUpdate()
-	if (this.Offset == nil) then
+local function OnUpdate(self)
+	if (self.Offset == nil) then
 		return
 	end
 	
 	local xCur, yCur = GetCursorPosition()
-	local s = this.Parent:GetEffectiveScale()
+	local s = self.Parent:GetEffectiveScale()
 
-	this.Parent:ClearAllPoints()
-	this.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xCur / s + this.Offset[1], yCur / s + this.Offset[2])
+	self.Parent:ClearAllPoints()
+	self.Parent:SetPoint("CENTER", UIParent, "BOTTOMLEFT", xCur / s + self.Offset[1], yCur / s + self.Offset[2])
 
 	-- The overlay won't move unless I do this. OnUpdate bug?
-	this.Parent:GetCenter()
+	self.Parent:GetCenter()
 	
 	local xDiff, yDiff = 7, 7
 	for frame, iface in pairs(IFrameManager.Registry) do
 		local data = IFrameManagerLayout[frame:GetName()]
-		if (frame.IFrameManager ~= this and not (data and data[2] == this.Parent:GetName())) then
-			if (framesOverlap(this, frame.IFrameManager)) then
-				xDiff, yDiff = snapFrames(this, frame.IFrameManager, xDiff, yDiff)
+		if (frame.IFrameManager ~= self and not (data and data[2] == self.Parent:GetName())) then
+			if (framesOverlap(self, frame.IFrameManager)) then
+				xDiff, yDiff = snapFrames(self, frame.IFrameManager, xDiff, yDiff)
 			end
 		end
 	end
 	
-	snapFrames(this, UIParent, xDiff, yDiff)
+	snapFrames(self, UIParent, xDiff, yDiff)
 
 	-- Update all dependent frames
 	for src, data in pairs(IFrameManagerLayout) do
-		if (data[2] == this.Parent:GetName()) then
+		if (data[2] == self.Parent:GetName()) then
 			updatePosition(getglobal(src))
 		end
 	end
 end
 
-local function OnMouseUp()
-	this.Offset = nil
-	IFrameManager:Update(this.Parent)
+local function OnMouseUp(self)
+	self.Offset = nil
+	IFrameManager:Update(self.Parent)
 end
 
 local function OnLeave(self)
