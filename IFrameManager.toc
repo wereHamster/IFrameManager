@@ -1,4 +1,4 @@
-## Interface: 40200
+## Interface: 60200
 ## Title: IFrameManager
 ## Author: wereHamster
 ## SavedVariables: IFrameManagerLayout
@@ -11,4 +11,3 @@ Frames\Anchor.lua
 Frames\Overlay.lua
 
 IFrameManager.lua
-
